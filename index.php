@@ -10,6 +10,12 @@ if (isset($_SESSION['message'])) {
     unset($_SESSION['message']);
     unset($_SESSION['type']);
 }
+
+// Search query
+$search = '';
+if (isset($_GET['search'])) {
+    $search = $conn->real_escape_string($_GET['search']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -19,55 +25,60 @@ if (isset($_SESSION['message'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Blog</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-    }
+    body { font-family: 'Poppins', sans-serif; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
-    <?php if ($message): ?>
-  <div id="notification" class="fixed top-5 right-5 z-50 px-4 py-2 rounded text-white font-semibold 
-      <?= $type === 'success' ? 'bg-green-500' : 'bg-red-500' ?>">
-    <?= $message ?>
-  </div>
+<?php if ($message): ?>
+<div id="notification" class="fixed top-5 right-5 z-50 px-4 py-2 rounded text-white font-semibold 
+    <?= $type === 'success' ? 'bg-green-500' : 'bg-red-500' ?>">
+  <?= $message ?>
+</div>
 <?php endif; ?>
 
-  <!-- Navbar -->
-  <nav class="fixed w-full bg-white shadow-md z-10">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-blue-600">MyBlog</h1>
-      <ul class="hidden md:flex space-x-6 font-medium">
-        <li><a href="#" class="hover:text-blue-500 transition">Home</a></li>
-        <li><a href="#" class="hover:text-blue-500 transition">Posts</a></li>
-        <li><a href="#" class="hover:text-blue-500 transition">About</a></li>
-        <li><a href="#" class="hover:text-blue-500 transition">Contact</a></li>
-      </ul>
- <?php if (isset($_SESSION['user'])): ?>
-  <div class="flex gap-3">
-    <a href="create_post.php" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">✍️ Create Post</a>
-    <button onclick="window.location.href='logout.php'" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">Logout</button>
-  </div>
-<?php else: ?>
-  <button id="openModal" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Login</button>
-<?php endif; ?>
+<!-- Navbar -->
+<nav class="fixed w-full bg-white shadow-md z-10">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-blue-600">MyBlog</h1>
+    <ul class="hidden md:flex space-x-6 font-medium items-center">
+      <li><a href="index.php" class="hover:text-blue-500 transition">Home</a></li>
+      <li><a href="#" class="hover:text-blue-500 transition">Posts</a></li>
+      <li><a href="#" class="hover:text-blue-500 transition">About</a></li>
+      <li><a href="#" class="hover:text-blue-500 transition">Contact</a></li>
+      <li>
+        <!-- Search Form -->
+        <form method="GET" action="index.php" class="flex">
+          <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search posts..." class="px-2 py-1 border rounded-l-md"/>
+          <button type="submit" class="bg-blue-600 text-white px-3 rounded-r-md hover:bg-blue-700 transition">Search</button>
+        </form>
+      </li>
+    </ul>
 
-  </nav>
-
-  <!-- Hero Section -->
-  <section class="pt-24 bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 py-20 text-center">
-    <div class="max-w-3xl mx-auto">
-      <h2 class="text-4xl md:text-5xl font-bold mb-4">Welcome to My Blog</h2>
-      <p class="text-lg text-gray-700">A space to share your thoughts, stories, and connect with the world.</p>
-      
+    <?php if (isset($_SESSION['user'])): ?>
+    <div class="flex gap-3">
+      <a href="create_post.php" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">✍️ Create Post</a>
+      <button onclick="window.location.href='logout.php'" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">Logout</button>
     </div>
-  </section>
+    <?php else: ?>
+    <button id="openModal" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Login</button>
+    <?php endif; ?>
+  </div>
+</nav>
 
-<!-- Modal -->
+<!-- Hero Section -->
+<section class="pt-24 bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 py-20 text-center">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="text-4xl md:text-5xl font-bold mb-4">Welcome to My Blog</h2>
+    <p class="text-lg text-gray-700">A space to share your thoughts, stories, and connect with the world.</p>
+  </div>
+</section>
+
+<!-- ===== Login/Register Modal (Restored) ===== -->
 <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-  <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate__animated animate__fadeInDown">
-    
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
     <span id="closeModal" class="absolute top-2 right-4 text-xl cursor-pointer">&times;</span>
 
     <!-- Toggle Buttons -->
@@ -92,59 +103,75 @@ if (isset($_SESSION['message'])) {
     </form>
   </div>
 </div>
+<!-- ===== /Modal ===== -->
 
-  <!-- Post Section -->
-  <section class="max-w-7xl mx-auto px-4 py-16">
-    <h2 class="text-3xl font-semibold text-center mb-10">Latest Posts</h2>
-    <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-<?php
-$result = $conn->query("SELECT * FROM posts ORDER BY id DESC");
-while ($row = $result->fetch_assoc()) {
-    echo "<div class='bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition'>";
-    if (!empty($row['image'])) {
-        echo "<img src='uploads/" . htmlspecialchars($row['image']) . "' alt='Post Image' class='w-full h-48 object-cover' />";
-    }
-    echo "<div class='p-5'>";
-    echo "<h3 class='text-xl font-semibold mb-2'>" . htmlspecialchars($row['title']) . "</h3>";
-    echo "<p class='text-gray-600 mb-4'>" . substr(strip_tags($row['content']), 0, 100) . "...</p>";
-    echo "<a href='post.php?id=" . $row['id'] . "' class='inline-block px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition'>Read More</a>";
-    echo "</div></div>";
+<!-- Post Section -->
+<section class="max-w-7xl mx-auto px-4 py-16">
+  <h2 class="text-3xl font-semibold text-center mb-10">Latest Posts</h2>
+  <div id="postContainer" class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+    <!-- Posts will load here via AJAX -->
+  </div>
+  <div class="text-center mt-8">
+    <button id="loadMore" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">Load More</button>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-100 py-10">
+  <div class="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-8">
+    <div>
+      <h4 class="text-xl font-semibold mb-4">About</h4>
+      <p>MyBlog is a platform for everyone to share knowledge, ideas, and creativity with the world.</p>
+    </div>
+    <div>
+      <h4 class="text-xl font-semibold mb-4">Quick Links</h4>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:underline">Home</a></li>
+        <li><a href="#" class="hover:underline">Posts</a></li>
+        <li><a href="#" class="hover:underline">About</a></li>
+        <li><a href="#" class="hover:underline">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-xl font-semibold mb-4">Contact</h4>
+      <p>Email: support@myblog.com</p>
+      <p>Phone: +91 99999 99999</p>
+    </div>
+  </div>
+  <div class="text-center mt-8 text-sm text-gray-400">&copy; 2025 MyBlog. All rights reserved.</div>
+</footer>
+
+<script>
+let offset = 0;
+const limit = 6;
+const search = "<?= $search ?>";
+
+function loadPosts() {
+    $.ajax({
+        url: 'load_posts.php',
+        type: 'GET',
+        data: { offset: offset, limit: limit, search: search },
+        success: function(data) {
+            if (data.trim() === '') {
+                $('#loadMore').hide();
+            } else {
+                $('#postContainer').append(data);
+                offset += limit;
+            }
+        }
+    });
 }
-?>
-    </div>
-  </section>
 
-  <!-- Footer -->
-  <footer class="bg-gray-900 text-gray-100 py-10">
-    <div class="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-8">
-      <div>
-        <h4 class="text-xl font-semibold mb-4">About</h4>
-        <p>MyBlog is a platform for everyone to share knowledge, ideas, and creativity with the world.</p>
-      </div>
-      <div>
-        <h4 class="text-xl font-semibold mb-4">Quick Links</h4>
-        <ul class="space-y-2">
-          <li><a href="#" class="hover:underline">Home</a></li>
-          <li><a href="#" class="hover:underline">Posts</a></li>
-          <li><a href="#" class="hover:underline">About</a></li>
-          <li><a href="#" class="hover:underline">Contact</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="text-xl font-semibold mb-4">Contact</h4>
-        <p>Email: support@myblog.com</p>
-        <p>Phone: +91 99999 99999</p>
-        <div class="mt-4 flex space-x-4">
-          <a href="#" class="hover:text-blue-400">Facebook</a>
-          <a href="#" class="hover:text-blue-400">Twitter</a>
-          <a href="#" class="hover:text-blue-400">Instagram</a>
-        </div>
-      </div>
-    </div>
-    <div class="text-center mt-8 text-sm text-gray-400">&copy; 2025 MyBlog. All rights reserved.</div>
-  </footer>
+// Initial load
+loadPosts();
 
- <script>
+$('#loadMore').click(function() {
+    loadPosts();
+});
+</script>
+
+<!-- Modal JS -->
+<script>
   const modal = document.getElementById('authModal');
   const openBtn = document.getElementById('openModal');
   const closeBtn = document.getElementById('closeModal');
@@ -153,30 +180,29 @@ while ($row = $result->fetch_assoc()) {
   const showLogin = document.getElementById('showLogin');
   const showRegister = document.getElementById('showRegister');
 
-  openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
-  closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  if (openBtn) {
+    openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  }
 
-  showLogin.addEventListener('click', () => {
-    loginForm.classList.remove('hidden');
-    registerForm.classList.add('hidden');
-    showLogin.classList.add('text-blue-600', 'font-bold');
-    showRegister.classList.remove('text-blue-600', 'font-bold');
-  });
+  if (showLogin && showRegister) {
+    showLogin.addEventListener('click', () => {
+      loginForm.classList.remove('hidden');
+      registerForm.classList.add('hidden');
+      showLogin.classList.add('text-blue-600', 'font-bold');
+      showRegister.classList.remove('text-blue-600', 'font-bold');
+    });
 
-  showRegister.addEventListener('click', () => {
-    loginForm.classList.add('hidden');
-    registerForm.classList.remove('hidden');
-    showRegister.classList.add('text-blue-600', 'font-bold');
-    showLogin.classList.remove('text-blue-600', 'font-bold');
-  });
-</script>
-<script>
-  const notification = document.getElementById('notification');
-  if (notification) {
-    setTimeout(() => {
-      notification.style.display = 'none';
-    }, 5000);
+    showRegister.addEventListener('click', () => {
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+      showRegister.classList.add('text-blue-600', 'font-bold');
+      showLogin.classList.remove('text-blue-600', 'font-bold');
+    });
   }
 </script>
+
 </body>
 </html>
